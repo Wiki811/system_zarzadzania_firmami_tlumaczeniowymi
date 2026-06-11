@@ -1,4 +1,4 @@
-from model import firmy
+from model import firmy, klienci
 import requests
 import folium
 from bs4 import BeautifulSoup
@@ -120,4 +120,140 @@ def get_mapa_firm():
     m.save("mapa_firm.html")
 
     print("Mapa firm została zapisana")
+# KLIENCI
 
+def add_klient():
+    imie = input("Podaj imię klienta: ").title()
+    nazwisko = input("Podaj nazwisko klienta: ").title()
+
+    if len(firmy) == 0:
+        print("Brak firm")
+        return
+
+    print("\nDostępne firmy:")
+
+    for i, firma in enumerate(firmy):
+        print(f"{i + 1}. {firma['nazwa']}")
+
+    numer = int(input("Wybierz numer firmy: "))
+
+    if 1 <= numer <= len(firmy):
+
+        miasto = input("Podaj miasto klienta: ").title()
+
+        coordinates = get_coordinates(miasto)
+
+        klient = {
+            "imie": imie,
+            "nazwisko": nazwisko,
+            "firma": firmy[numer - 1]["nazwa"],
+            "miasto": miasto,
+            "lat": coordinates[0],
+            "lon": coordinates[1]
+        }
+
+        klienci.append(klient)
+
+        print("Klient został dodany")
+
+
+def read_klienci():
+    if len(klienci) == 0:
+        print("Brak klientów")
+        return
+
+    for i, klient in enumerate(klienci):
+        print(
+            f"{i + 1}. "
+            f"{klient['imie']} "
+            f"{klient['nazwisko']} - "
+            f"{klient['firma']} - "
+            f"{klient['miasto']}"
+        )
+
+
+def update_klient():
+    if len(klienci) == 0:
+        print("Brak klientów")
+        return
+
+    read_klienci()
+
+    numer = int(input("Podaj numer klienta do edycji: "))
+
+    if 1 <= numer <= len(klienci):
+
+        nowe_imie = input("Nowe imię: ").title()
+        nowe_nazwisko = input("Nowe nazwisko: ").title()
+
+        print("\nDostępne firmy:")
+
+        for i, firma in enumerate(firmy):
+            print(f"{i + 1}. {firma['nazwa']}")
+
+        numer_firmy = int(input("Wybierz numer firmy: "))
+
+        nowe_miasto = input("Nowe miasto: ").title()
+
+        coordinates = get_coordinates(nowe_miasto)
+
+        if 1 <= numer_firmy <= len(firmy):
+
+            klienci[numer - 1]["imie"] = nowe_imie
+            klienci[numer - 1]["nazwisko"] = nowe_nazwisko
+            klienci[numer - 1]["firma"] = firmy[numer_firmy - 1]["nazwa"]
+
+            klienci[numer - 1]["miasto"] = nowe_miasto
+            klienci[numer - 1]["lat"] = coordinates[0]
+            klienci[numer - 1]["lon"] = coordinates[1]
+
+            print("Klient został zaktualizowany")
+
+
+def delete_klient():
+    if len(klienci) == 0:
+        print("Brak klientów")
+        return
+
+    read_klienci()
+
+    numer = int(input("Podaj numer klienta do usunięcia: "))
+
+    if 1 <= numer <= len(klienci):
+        klienci.pop(numer - 1)
+
+        print("Klient został usunięty")
+
+
+def get_mapa_klientow():
+    m = folium.Map(location=[52, 21], zoom_start=6)
+
+    for klient in klienci:
+        folium.Marker(
+            location=[
+                klient["lat"],
+                klient["lon"]
+            ],
+            popup=f"{klient['imie']} {klient['nazwisko']}"
+        ).add_to(m)
+
+    m.save("mapa_klientow.html")
+
+    print("Mapa klientów została zapisana")
+
+
+def read_klienci_firmy():
+    read_firmy()
+
+    numer = int(input("Wybierz firmę: "))
+
+    nazwa = firmy[numer - 1]["nazwa"]
+
+    print(f"\nKlienci firmy {nazwa}:")
+
+    for klient in klienci:
+        if klient["firma"] == nazwa:
+            print(
+                f"{klient['imie']} "
+                f"{klient['nazwisko']}"
+            )

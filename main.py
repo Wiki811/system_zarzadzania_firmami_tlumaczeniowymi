@@ -1,35 +1,24 @@
+from tkinter import *
+from tkinter import ttk
 from controller import *
 
-while True:
-    print("\n--- SYSTEM FIRM TŁUMACZENIOWYCH ---")
-    print("1. Dodaj firmę")
-    print("2. Wyświetl firmy")
-    print("3. Edytuj firmę")
-    print("4. Usuń firmę")
-    print("5. Mapa firm")
-    print("0. Wyjście")
+okno = Tk()
 
-    wybor = input("Wybierz opcję: ")
+okno.title("System zarządzania firmami tłumaczeniowymi")
+okno.geometry("1200x700")
 
-    if wybor == "1":
-        add_firma()
+notebook = ttk.Notebook(okno)
+notebook.pack(fill="both", expand=True)
 
-    elif wybor == "2":
-        read_firmy()
+# Zakładki
+tab_firmy = Frame(notebook)
+tab_klienci = Frame(notebook)
+tab_pracownicy = Frame(notebook)
+tab_filtrowanie = Frame(notebook)
 
-    elif wybor == "3":
-        update_firma()
+notebook.add(tab_firmy, text="Firmy")
+notebook.add(tab_klienci, text="Klienci")
+notebook.add(tab_pracownicy, text="Pracownicy")
+notebook.add(tab_filtrowanie,text="Filtrowanie")
 
-    elif wybor == "4":
-        delete_firma()
-
-    elif wybor == "5":
-        get_mapa_firm()
-
-    elif wybor == "0":
-        break
-
-    else:
-        print("Nieprawidłowa opcja")
-
-
+okno.mainloop()
