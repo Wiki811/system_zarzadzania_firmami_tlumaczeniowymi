@@ -1,35 +1,37 @@
+from tkinter import *
+from tkinter import ttk
+import tkintermapview
+
+from model import factories, clients, employees, users
 from controller import *
 
-while True:
-    print("\n--- SYSTEM FIRM TŁUMACZENIOWYCH ---")
-    print("1. Dodaj firmę")
-    print("2. Wyświetl firmy")
-    print("3. Edytuj firmę")
-    print("4. Usuń firmę")
-    print("5. Mapa firm")
-    print("0. Wyjście")
+root = Tk()
+root.title("System zarządzania firmami tłumaczeniowymi")
+root.geometry("1200x800")
 
-    wybor = input("Wybierz opcję: ")
+notebook = ttk.Notebook(root)
 
-    if wybor == "1":
-        add_firma()
+tab_firmy = Frame(notebook)
+tab_klienci = Frame(notebook)
+tab_pracownicy = Frame(notebook)
+tab_wyszukiwarka = Frame(notebook)
 
-    elif wybor == "2":
-        read_firmy()
+notebook.add(tab_firmy, text="Firmy")
+notebook.add(tab_klienci, text="Klienci")
+notebook.add(tab_pracownicy, text="Pracownicy")
+notebook.add(tab_wyszukiwarka, text="Wyszukiwarka")
 
-    elif wybor == "3":
-        update_firma()
+notebook.pack(fill=BOTH, expand=True)
 
-    elif wybor == "4":
-        delete_firma()
+# FIRMY TŁUMACZENIOWE
 
-    elif wybor == "5":
-        get_mapa_firm()
+frame_company_list = Frame(tab_firmy)
+frame_company_form = Frame(tab_firmy)
+frame_company_details = Frame(tab_firmy)
+frame_company_map = Frame(tab_firmy)
 
-    elif wybor == "0":
-        break
-
-    else:
-        print("Nieprawidłowa opcja")
-
+frame_company_list.grid(row=0, column=0, padx=10, pady=10, sticky=N)
+frame_company_form.grid(row=0, column=1, padx=10, pady=10, sticky=N)
+frame_company_details.grid(row=1, column=0, columnspan=2, padx=10, pady=5)
+frame_company_map.grid(row=0, column=2, rowspan=2, padx=10, pady=10)
 
