@@ -1,4 +1,4 @@
-factories: list = [
+companies: list = [
     {'name': 'LinguaPro', 'location': 'Warszawa', 'language': 'angielski', 'marker': None},
     {'name': 'Global Translate', 'location': 'Kraków', 'language': 'niemiecki', 'marker': None},
     {'name': 'EuroLingua', 'location': 'Wrocław', 'language': 'francuski', 'marker': None},
