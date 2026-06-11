@@ -469,26 +469,392 @@ def load_client_markers():
 
 refresh_clients()
 
+# pracownicy
+
+frame_employee_list = Frame(tab_pracownicy)
+frame_employee_form = Frame(tab_pracownicy)
+frame_employee_details = Frame(tab_pracownicy)
+frame_employee_map = Frame(tab_pracownicy)
+
+frame_employee_list.grid(row=0, column=0, padx=10, pady=10, sticky=N)
+frame_employee_form.grid(row=0, column=1, padx=10, pady=10, sticky=N)
+frame_employee_details.grid(row=1, column=0, columnspan=2, padx=10, pady=5)
+frame_employee_map.grid(row=0, column=2, rowspan=2, padx=10, pady=10)
+
+# lista
+
+Label(frame_employee_list, text="Lista pracowników:", font=("Arial", 10, "bold")).grid(row=0, column=0, columnspan=2)
+
+entry_employee_filter = Entry(frame_employee_list)
+entry_employee_filter.grid(row=1, column=0)
+
+Button(frame_employee_list, text="Szukaj", command=lambda: filter_employees()).grid(row=1, column=1)
+
+listbox_employees = Listbox(frame_employee_list, width=30, height=10)
+listbox_employees.grid(row=2, column=0, columnspan=2)
+
+Button(frame_employee_list, text="Szczegóły", command=lambda: show_employee_details()).grid(row=3, column=0)
+Button(frame_employee_list, text="Edytuj", command=lambda: edit_employee_gui()).grid(row=3, column=1)
+Button(frame_employee_list, text="Usuń", command=lambda: delete_employee_gui()).grid(row=4, column=0, columnspan=2)
+
+
+# formularz
+
+Label(frame_employee_form, text="Formularz:", font=("Arial", 10, "bold")).grid(row=0, column=0, columnspan=2)
+
+Label(frame_employee_form, text="Imię i nazwisko:").grid(row=1, column=0, sticky=W)
+Label(frame_employee_form, text="Miasto:").grid(row=2, column=0, sticky=W)
+Label(frame_employee_form, text="Firma tłumaczeniowa:").grid(row=3, column=0, sticky=W)
+Label(frame_employee_form, text="Stanowisko:").grid(row=4, column=0, sticky=W)
+
+entry_employee_name = Entry(frame_employee_form)
+entry_employee_location = Entry(frame_employee_form)
+entry_employee_company = Entry(frame_employee_form)
+entry_employee_role = Entry(frame_employee_form)
+
+entry_employee_name.grid(row=1, column=1)
+entry_employee_location.grid(row=2, column=1)
+entry_employee_company.grid(row=3, column=1)
+entry_employee_role.grid(row=4, column=1)
+
+button_add_employee = Button(
+    frame_employee_form,
+    text="Dodaj pracownika",
+    command=lambda: add_employee_gui()
+)
+
+button_add_employee.grid(row=5, column=0, columnspan=2, pady=5)
+
+
+# szczegóły
+
+Label(frame_employee_details, text="Szczegóły:", font=("Arial", 10, "bold")).grid(row=0, column=0)
+
+Label(frame_employee_details, text="Pracownik:").grid(row=1, column=0)
+label_employee_name_val = Label(frame_employee_details, text="...")
+label_employee_name_val.grid(row=1, column=1)
+
+Label(frame_employee_details, text="Miasto:").grid(row=1, column=2)
+label_employee_location_val = Label(frame_employee_details, text="...")
+label_employee_location_val.grid(row=1, column=3)
+
+Label(frame_employee_details, text="Firma tłumaczeniowa:").grid(row=1, column=4)
+label_employee_company_val = Label(frame_employee_details, text="...")
+label_employee_company_val.grid(row=1, column=5)
+
+Label(frame_employee_details, text="Stanowisko:").grid(row=1, column=6)
+label_employee_role_val = Label(frame_employee_details, text="...")
+label_employee_role_val.grid(row=1, column=7)
+
+
+# mapa
+
+map_employees = tkintermapview.TkinterMapView(frame_employee_map, width=500, height=400)
+map_employees.set_position(52.2, 21.0)
+map_employees.set_zoom(6)
+map_employees.grid(row=0, column=0)
+
+def refresh_employees():
+    listbox_employees.delete(0, END)
+
+    for e in get_employees(employees):
+        listbox_employees.insert(END, e['name'])
+
+
+def show_employee_details():
+    i = listbox_employees.curselection()
+
+    if not i:
+        return
+
+    i = i[0]
+    e = employees[i]
+
+    label_employee_name_val.config(text=e['name'])
+    label_employee_location_val.config(text=e['location'])
+    label_employee_company_val.config(text=e['company'])
+    label_employee_role_val.config(text=e['role'])
+
+    coords = get_coordinates(e['location'])
+
+    map_employees.set_position(coords[0], coords[1])
+    map_employees.set_zoom(12)
+
+
+def add_employee_gui():
+    name = entry_employee_name.get()
+    location = entry_employee_location.get()
+    company = entry_employee_company.get()
+    role = entry_employee_role.get()
+
+    if not name or not location or not company or not role:
+        return
+
+    add_employee(employees, name, location, company, role)
+
+    try:
+        coords = get_coordinates(location)
+        marker = map_employees.set_marker(coords[0], coords[1], text=name)
+        employees[-1]['marker'] = marker
+    except:
+        pass
+
+    entry_employee_name.delete(0, END)
+    entry_employee_location.delete(0, END)
+    entry_employee_company.delete(0, END)
+    entry_employee_role.delete(0, END)
+
+    refresh_employees()
+
+
+def edit_employee_gui():
+    i = listbox_employees.curselection()
+
+    if not i:
+        return
+
+    i = i[0]
+    e = employees[i]
+
+    entry_employee_name.delete(0, END)
+    entry_employee_location.delete(0, END)
+    entry_employee_company.delete(0, END)
+    entry_employee_role.delete(0, END)
+
+    entry_employee_name.insert(0, e['name'])
+    entry_employee_location.insert(0, e['location'])
+    entry_employee_company.insert(0, e['company'])
+    entry_employee_role.insert(0, e['role'])
+
+    button_add_employee.config(
+        text="Zapisz zmiany",
+        command=lambda: save_employee(i)
+    )
+
+
+def save_employee(i):
+    if employees[i]['marker']:
+        employees[i]['marker'].delete()
+
+    update_employee(
+        employees,
+        i,
+        entry_employee_name.get(),
+        entry_employee_location.get(),
+        entry_employee_company.get(),
+        entry_employee_role.get()
+    )
+
+    try:
+        coords = get_coordinates(employees[i]['location'])
+
+        employees[i]['marker'] = map_employees.set_marker(
+            coords[0],
+            coords[1],
+            text=employees[i]['name']
+        )
+    except:
+        pass
+
+    entry_employee_name.delete(0, END)
+    entry_employee_location.delete(0, END)
+    entry_employee_company.delete(0, END)
+    entry_employee_role.delete(0, END)
+
+    button_add_employee.config(
+        text="Dodaj pracownika",
+        command=lambda: add_employee_gui()
+    )
+
+    refresh_employees()
+
+
+def delete_employee_gui():
+    i = listbox_employees.curselection()
+
+    if not i:
+        return
+
+    i = i[0]
+
+    if employees[i]['marker']:
+        employees[i]['marker'].delete()
+
+    remove_employee(employees, i)
+
+    refresh_employees()
+
+
+def filter_employees():
+    search = entry_employee_filter.get().lower()
+
+    listbox_employees.delete(0, END)
+
+    for e in employees:
+        if search in e['name'].lower() or search in e['company'].lower():
+            listbox_employees.insert(END, e['name'])
+
+
+def load_employee_markers():
+    for e in employees:
+        try:
+            coords = get_coordinates(e['location'])
+
+            e['marker'] = map_employees.set_marker(
+                coords[0],
+                coords[1],
+                text=e['name']
+            )
+        except:
+            pass
+
+
+refresh_employees()
+
+
+# ========== WYSZUKIWARKA ==========
+
+frame_views_filters = Frame(tab_wyszukiwarka)
+frame_views_results = Frame(tab_wyszukiwarka)
+frame_views_map = Frame(tab_wyszukiwarka)
+
+frame_views_filters.grid(row=0, column=0, padx=10, pady=10, sticky=N)
+frame_views_results.grid(row=0, column=1, padx=10, pady=10, sticky=N)
+frame_views_map.grid(row=0, column=2, padx=10, pady=10, sticky=N)
+
+Label(frame_views_filters, text="Filtry:", font=("Arial", 10, "bold")).grid(row=0, column=0, columnspan=2)
+
+Label(frame_views_filters, text="Nazwa firmy tłumaczeniowej:").grid(row=1, column=0, sticky=W)
+
+entry_filter_company = Entry(frame_views_filters)
+entry_filter_company.grid(row=1, column=1)
+
+Button(
+    frame_views_filters,
+    text="Klienci tej firmy",
+    command=lambda: show_clients_by_company()
+).grid(row=2, column=0, columnspan=2, pady=3)
+
+Button(
+    frame_views_filters,
+    text="Pracownicy tej firmy",
+    command=lambda: show_employees_by_company()
+).grid(row=3, column=0, columnspan=2, pady=3)
+
+Label(
+    frame_views_filters,
+    text="Język tłumaczeń:"
+).grid(row=4, column=0, sticky=W, pady=(15, 0))
+
+entry_filter_language = Entry(frame_views_filters)
+entry_filter_language.grid(row=4, column=1, pady=(15, 0))
+
+Button(
+    frame_views_filters,
+    text="Firmy obsługujące język",
+    command=lambda: show_companies_by_language()
+).grid(row=5, column=0, columnspan=2, pady=3)
+
+Label(frame_views_results, text="Wyszukiwarka:", font=("Arial", 10, "bold")).grid(row=0, column=0)
+
+listbox_views = Listbox(frame_views_results, width=50, height=20)
+listbox_views.grid(row=1, column=0)
+
+map_views = tkintermapview.TkinterMapView(frame_views_map, width=500, height=400)
+map_views.set_position(52.2, 21.0)
+map_views.set_zoom(6)
+map_views.grid(row=0, column=0)
 
 
 
+def show_clients_by_company():
+    company_name = entry_filter_company.get()
+
+    listbox_views.delete(0, END)
+    map_views.delete_all_marker()
+
+    result = get_clients_by_company(clients, company_name)
+
+    if not result:
+        listbox_views.insert(END, "Brak klientów dla tej firmy")
+        return
+
+    for c in result:
+        listbox_views.insert(END, f"{c['name']} - {c['location']}")
+
+        try:
+            coords = get_coordinates(c['location'])
+            map_views.set_marker(coords[0], coords[1], text=c['name'])
+        except:
+            pass
 
 
+def show_employees_by_company():
+    company_name = entry_filter_company.get()
+
+    listbox_views.delete(0, END)
+    map_views.delete_all_marker()
+
+    result = get_employees_by_company(employees, company_name)
+
+    if not result:
+        listbox_views.insert(END, "Brak pracowników dla tej firmy")
+        return
+
+    for e in result:
+        listbox_views.insert(END, f"{e['name']} - {e['role']}")
+
+        try:
+            coords = get_coordinates(e['location'])
+            map_views.set_marker(coords[0], coords[1], text=e['name'])
+        except:
+            pass
 
 
+def show_companies_by_language():
+    language = entry_filter_language.get()
+
+    listbox_views.delete(0, END)
+    map_views.delete_all_marker()
+
+    result = get_companies_by_language(companies, language)
+
+    if not result:
+        listbox_views.insert(END, "Brak firm dla tego języka")
+        return
+
+    for company in result:
+        listbox_views.insert(
+            END,
+            f"{company['name']} - {company['location']}"
+        )
+
+        try:
+            coords = get_coordinates(company['location'])
+
+            map_views.set_marker(
+                coords[0],
+                coords[1],
+                text=company['name']
+            )
+        except:
+            pass
 
 
+refresh_companies()
+refresh_clients()
+refresh_employees()
 
-
-
-
-
-
-
-
-
+load_company_markers()
+load_client_markers()
+load_employee_markers()
 
 root.mainloop()
+
+
+
+
+
 
 
 
