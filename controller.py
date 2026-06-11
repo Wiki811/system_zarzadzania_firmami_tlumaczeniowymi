@@ -1,97 +1,11 @@
-from model import firmy, klienci
 import requests
-import folium
 from bs4 import BeautifulSoup
 
-# FIRMY TŁUMACZENIOWE
 
-def add_firma():
-    nazwa = input("Podaj nazwę firmy: ")
-    miasto = input("Podaj miasto: ").title()
-    jezyk = input("Podaj język tłumaczeń: ")
-
-    coordinates = get_coordinates(miasto)
-
-    firmy.append({
-        "nazwa": nazwa,
-        "miasto": miasto,
-        "jezyk": jezyk,
-        "lat": coordinates[0],
-        "lon": coordinates[1]
-    })
-
-    print("Firma została dodana")
-
-
-def read_firmy():
-    if len(firmy) == 0:
-        print("Brak firm")
-        return
-
-    for i, firma in enumerate(firmy):
-        print(
-            f"{i + 1}. {firma['nazwa']} - {firma['miasto']} - {firma['jezyk']}"
-        )
-
-
-def update_firma():
-    if len(firmy) == 0:
-        print("Brak firm")
-        return
-
-    read_firmy()
-
-    numer = int(input("Podaj numer firmy do edycji: "))
-
-    if 1 <= numer <= len(firmy):
-
-        nowa_nazwa = input("Nowa nazwa firmy: ")
-        nowe_miasto = input("Nowe miasto: ").title()
-        nowy_jezyk = input("Nowy język tłumaczeń: ")
-
-        firmy[numer - 1]["nazwa"] = nowa_nazwa
-        firmy[numer - 1]["miasto"] = nowe_miasto
-        firmy[numer - 1]["jezyk"] = nowy_jezyk
-
-        nowe_wspolrzedne = get_coordinates(nowe_miasto)
-
-        firmy[numer - 1]["lat"] = nowe_wspolrzedne[0]
-        firmy[numer - 1]["lon"] = nowe_wspolrzedne[1]
-
-        print("Firma została zaktualizowana")
-
-    else:
-        print("Nieprawidłowy numer")
-
-
-def delete_firma():
-    if len(firmy) == 0:
-        print("Brak firm")
-        return
-
-    read_firmy()
-
-    numer = int(input("Podaj numer firmy do usunięcia: "))
-
-    if 1 <= numer <= len(firmy):
-
-        firmy.pop(numer - 1)
-
-        print("Firma została usunięta")
-
-    else:
-        print("Nieprawidłowy numer")
-
-
-def get_coordinates(miasto):
-    url = f'https://pl.wikipedia.org/wiki/{miasto}'
-
-    headers = {
-        'User-Agent': 'Mozilla/5.0'
-    }
-
+def get_coordinates(location: str) -> list:
+    url = f'https://pl.wikipedia.org/wiki/{location}'
+    headers = {'User-Agent': 'Mozilla/5.0'}
     response = requests.get(url, headers=headers)
-
     response_html = BeautifulSoup(response.text, 'html.parser')
 
     latitude = float(
@@ -105,155 +19,143 @@ def get_coordinates(miasto):
     return [latitude, longitude]
 
 
-def get_mapa_firm():
-    m = folium.Map([52, 21], zoom_start=6)
+# FIRMY TŁUMACZENIOWE
 
-    for firma in firmy:
-        folium.Marker(
-            location=[
-                firma['lat'],
-                firma['lon']
-            ],
-            popup=firma['nazwa']
-        ).add_to(m)
+def add_company(companies: list,
+                name: str,
+                location: str,
+                language: str) -> None:
 
-    m.save("mapa_firm.html")
+    companies.append({
+        'name': name,
+        'location': location,
+        'language': language,
+        'marker': None
+    })
 
-    print("Mapa firm została zapisana")
+
+def remove_company(companies: list, index: int) -> None:
+    companies.pop(index)
+
+
+def update_company(companies: list,
+                   index: int,
+                   name: str,
+                   location: str,
+                   language: str) -> None:
+
+    companies[index]['name'] = name
+    companies[index]['location'] = location
+    companies[index]['language'] = language
+
+
+def get_companies(companies: list) -> list:
+    return companies
+
+
+def get_companies_by_language(companies: list,
+                              language: str) -> list:
+
+    return [
+        company
+        for company in companies
+        if company['language'].lower() == language.lower()
+    ]
+
+
 # KLIENCI
 
-def add_klient():
-    imie = input("Podaj imię klienta: ").title()
-    nazwisko = input("Podaj nazwisko klienta: ").title()
+def add_client(clients: list,
+               name: str,
+               location: str,
+               company: str,
+               service: str) -> None:
 
-    if len(firmy) == 0:
-        print("Brak firm")
-        return
-
-    print("\nDostępne firmy:")
-
-    for i, firma in enumerate(firmy):
-        print(f"{i + 1}. {firma['nazwa']}")
-
-    numer = int(input("Wybierz numer firmy: "))
-
-    if 1 <= numer <= len(firmy):
-
-        miasto = input("Podaj miasto klienta: ").title()
-
-        coordinates = get_coordinates(miasto)
-
-        klient = {
-            "imie": imie,
-            "nazwisko": nazwisko,
-            "firma": firmy[numer - 1]["nazwa"],
-            "miasto": miasto,
-            "lat": coordinates[0],
-            "lon": coordinates[1]
-        }
-
-        klienci.append(klient)
-
-        print("Klient został dodany")
+    clients.append({
+        'name': name,
+        'location': location,
+        'company': company,
+        'service': service,
+        'marker': None
+    })
 
 
-def read_klienci():
-    if len(klienci) == 0:
-        print("Brak klientów")
-        return
-
-    for i, klient in enumerate(klienci):
-        print(
-            f"{i + 1}. "
-            f"{klient['imie']} "
-            f"{klient['nazwisko']} - "
-            f"{klient['firma']} - "
-            f"{klient['miasto']}"
-        )
+def remove_client(clients: list, index: int) -> None:
+    clients.pop(index)
 
 
-def update_klient():
-    if len(klienci) == 0:
-        print("Brak klientów")
-        return
+def update_client(clients: list,
+                  index: int,
+                  name: str,
+                  location: str,
+                  company: str,
+                  service: str) -> None:
 
-    read_klienci()
-
-    numer = int(input("Podaj numer klienta do edycji: "))
-
-    if 1 <= numer <= len(klienci):
-
-        nowe_imie = input("Nowe imię: ").title()
-        nowe_nazwisko = input("Nowe nazwisko: ").title()
-
-        print("\nDostępne firmy:")
-
-        for i, firma in enumerate(firmy):
-            print(f"{i + 1}. {firma['nazwa']}")
-
-        numer_firmy = int(input("Wybierz numer firmy: "))
-
-        nowe_miasto = input("Nowe miasto: ").title()
-
-        coordinates = get_coordinates(nowe_miasto)
-
-        if 1 <= numer_firmy <= len(firmy):
-
-            klienci[numer - 1]["imie"] = nowe_imie
-            klienci[numer - 1]["nazwisko"] = nowe_nazwisko
-            klienci[numer - 1]["firma"] = firmy[numer_firmy - 1]["nazwa"]
-
-            klienci[numer - 1]["miasto"] = nowe_miasto
-            klienci[numer - 1]["lat"] = coordinates[0]
-            klienci[numer - 1]["lon"] = coordinates[1]
-
-            print("Klient został zaktualizowany")
+    clients[index]['name'] = name
+    clients[index]['location'] = location
+    clients[index]['company'] = company
+    clients[index]['service'] = service
 
 
-def delete_klient():
-    if len(klienci) == 0:
-        print("Brak klientów")
-        return
-
-    read_klienci()
-
-    numer = int(input("Podaj numer klienta do usunięcia: "))
-
-    if 1 <= numer <= len(klienci):
-        klienci.pop(numer - 1)
-
-        print("Klient został usunięty")
+def get_clients(clients: list) -> list:
+    return clients
 
 
-def get_mapa_klientow():
-    m = folium.Map(location=[52, 21], zoom_start=6)
+def get_clients_by_company(clients: list,
+                           company_name: str) -> list:
 
-    for klient in klienci:
-        folium.Marker(
-            location=[
-                klient["lat"],
-                klient["lon"]
-            ],
-            popup=f"{klient['imie']} {klient['nazwisko']}"
-        ).add_to(m)
-
-    m.save("mapa_klientow.html")
-
-    print("Mapa klientów została zapisana")
+    return [
+        client
+        for client in clients
+        if client['company'] == company_name
+    ]
 
 
-def read_klienci_firmy():
-    read_firmy()
+# PRACOWNICY
 
-    numer = int(input("Wybierz firmę: "))
+def add_employee(employees: list,
+                 name: str,
+                 location: str,
+                 company: str,
+                 role: str) -> None:
 
-    nazwa = firmy[numer - 1]["nazwa"]
+    employees.append({
+        'name': name,
+        'location': location,
+        'company': company,
+        'role': role,
+        'marker': None
+    })
 
-    print(f"\nKlienci firmy {nazwa}:")
 
-    for klient in klienci:
-        if klient["firma"] == nazwa:
-            print(
-                f"{klient['imie']} "
-                f"{klient['nazwisko']}"
-            )
+def remove_employee(employees: list,
+                    index: int) -> None:
+
+    employees.pop(index)
+
+
+def update_employee(employees: list,
+                    index: int,
+                    name: str,
+                    location: str,
+                    company: str,
+                    role: str) -> None:
+
+    employees[index]['name'] = name
+    employees[index]['location'] = location
+    employees[index]['company'] = company
+    employees[index]['role'] = role
+
+
+def get_employees(employees: list) -> list:
+    return employees
+
+
+def get_employees_by_company(employees: list,
+                             company_name: str) -> list:
+
+    return [
+        employee
+        for employee in employees
+        if employee['company'] == company_name
+    ]
