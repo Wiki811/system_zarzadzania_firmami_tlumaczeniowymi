@@ -7,15 +7,8 @@ def get_coordinates(location: str) -> list:
     headers = {'User-Agent': 'Mozilla/5.0'}
     response = requests.get(url, headers=headers)
     response_html = BeautifulSoup(response.text, 'html.parser')
-
-    latitude = float(
-        response_html.select('.latitude')[1].text.replace(',', '.')
-    )
-
-    longitude = float(
-        response_html.select('.longitude')[1].text.replace(',', '.')
-    )
-
+    latitude = float(response_html.select('.latitude')[1].text.replace(',', '.'))
+    longitude = float(response_html.select('.longitude')[1].text.replace(',', '.'))
     return [latitude, longitude]
 
 
